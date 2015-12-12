@@ -6,10 +6,13 @@
 package parser_go;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  *
@@ -17,6 +20,8 @@ import org.jsoup.nodes.Document;
  */
 public class main_window extends javax.swing.JFrame {
 
+    private HashMap map = new HashMap();
+    
     /**
      * Creates new form main_window
      */
@@ -75,7 +80,9 @@ public class main_window extends javax.swing.JFrame {
         try {
             Document doc = Jsoup.connect("http://www.yandex.ru/").get(); 
             jButton1.setText(doc.title());
-            String str1 = doc.body().getElementsByTag("span class=\"inline-stocks__value_inner\"").text();
+            Elements rows = doc.select("span.inline-stocks__value_inner");
+            Element row = rows.get(1);
+            String str1 = row.text();
             jLabel1.setText(str1);
         } catch (IOException ex) {
             Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
