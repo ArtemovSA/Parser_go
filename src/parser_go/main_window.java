@@ -7,6 +7,7 @@ package parser_go;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,12 +24,17 @@ import org.jsoup.select.Elements;
  */
 public class main_window extends javax.swing.JFrame {
 
+    public class Company_class {
+        public String name;
+        public String url;
+    }
+        
     public Document doc = null;
+    public Document doc_full = null;
     public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=";
     public String url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
-  
             
-    private HashMap map = new HashMap();
+    public ArrayList<Company_class> companys = new ArrayList<Company_class>();
 
     /**
      * Creates new form main_window
@@ -54,6 +60,12 @@ public class main_window extends javax.swing.JFrame {
         jTextField_search = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
         jLabel_name = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea_full = new javax.swing.JTextArea();
+        jLabel_full = new javax.swing.JLabel();
+        jTextField_full = new javax.swing.JTextField();
+        jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -93,6 +105,28 @@ public class main_window extends javax.swing.JFrame {
 
         jLabel_name.setText("Name");
 
+        jButton3.setText("Load company");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jTextArea_full.setColumns(20);
+        jTextArea_full.setRows(5);
+        jScrollPane2.setViewportView(jTextArea_full);
+
+        jLabel_full.setText("Load");
+
+        jTextField_full.setText("div.presentation global");
+
+        jButton4.setText("Parse");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -101,19 +135,28 @@ public class main_window extends javax.swing.JFrame {
                 .addGap(19, 19, 19)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jTextField_select, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                             .addComponent(jTextField_search))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel_name)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 353, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jTextField_full, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel_full)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 340, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -131,7 +174,16 @@ public class main_window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton3)
+                    .addComponent(jLabel_full)
+                    .addComponent(jTextField_full, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -139,6 +191,7 @@ public class main_window extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        
         Connection.Response res = null;
 
         try {          
@@ -173,20 +226,41 @@ public class main_window extends javax.swing.JFrame {
     }//GEN-LAST:event_jTextField_searchActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        Company_class company = new Company_class();
+                
         Elements links = doc.select(jTextField_select.getText());
-        Elements media = doc.select("[src]");
-        Elements imports = doc.select("link[href]");
-
         jTextArea_company.setText("");
                     
         for (int i=0; i<links.size()-1; i++) {
-            String url = links.get(i).attr("href");
-            String name = links.get(i).attr("title");
-            jTextArea_company.append(name+" | "+url+"\n");
+            company.name = links.get(i).attr("title");
+            String buf_str = links.get(i).attr("href");
+            company.url = "http://ru.kompass.com"+ buf_str.substring(buf_str.indexOf("/ru",0));
+            companys.add(company);
+             jTextArea_company.append(company.name+" | "+company.url+"\n");
         }
 
         jLabel1.setText(String.valueOf(links.size()));
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        try {
+            String url_full = companys.get(1).url;
+            doc_full = Jsoup
+                    .connect(url_full)
+                    .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
+                    .get();
+                    
+            jLabel_full.setText(companys.get(1).url);
+        } catch (IOException ex) {
+            Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        Elements company_elements = doc_full.select(jTextField_full.getText());
+        jTextArea_full.setText("");
+        jTextArea_full.append(company_elements.html());
+    }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -226,10 +300,16 @@ public class main_window extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel_full;
     private javax.swing.JLabel jLabel_name;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea_company;
+    private javax.swing.JTextArea jTextArea_full;
+    private javax.swing.JTextField jTextField_full;
     private javax.swing.JTextField jTextField_search;
     private javax.swing.JTextField jTextField_select;
     // End of variables declaration//GEN-END:variables
