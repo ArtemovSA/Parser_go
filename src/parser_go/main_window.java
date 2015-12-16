@@ -5,10 +5,13 @@
  */
 package parser_go;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jsoup.Connection;
+import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,8 +23,13 @@ import org.jsoup.select.Elements;
  */
 public class main_window extends javax.swing.JFrame {
 
+    public Document doc = null;
+    public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=";
+    public String url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
+  
+            
     private HashMap map = new HashMap();
-    
+
     /**
      * Creates new form main_window
      */
@@ -40,10 +48,15 @@ public class main_window extends javax.swing.JFrame {
 
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
+        jTextField_select = new javax.swing.JTextField();
+        jTextField_search = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton1.setText("jButton1");
+        jButton1.setText("Загрузить");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -52,43 +65,118 @@ public class main_window extends javax.swing.JFrame {
 
         jLabel1.setText("jLabel1");
 
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane1.setViewportView(jTextArea1);
+
+        jTextField_select.setText("div.details > h2 > a[href]");
+        jTextField_select.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_selectActionPerformed(evt);
+            }
+        });
+
+        jTextField_search.setText("microcircuits");
+        jTextField_search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_searchActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("Парсить");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(jButton1)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel1)
-                .addContainerGap(254, Short.MAX_VALUE))
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextField_select, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                            .addComponent(jTextField_search))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 398, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1)
-                    .addComponent(jLabel1))
-                .addContainerGap(266, Short.MAX_VALUE))
+                    .addComponent(jTextField_search, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField_select, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        try {
-            Document doc = Jsoup.connect("http://www.yandex.ru/").get(); 
+        Connection.Response res = null;
+
+        try {          
+            res = Jsoup.connect(url_search+jTextField_search.getText())
+                .method(Method.GET)
+                .execute(); 
+
+            doc = res.parse();
+            
+            doc = Jsoup
+                    .connect(url_country)
+                    .cookies(res.cookies())
+                    .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
+                    .get();
+            
             jButton1.setText(doc.title());
-            Elements rows = doc.select("span.inline-stocks__value_inner");
-            Element row = rows.get(1);
-            String str1 = row.text();
-            jLabel1.setText(str1);
+            jTextArea1.setText("");
+
         } catch (IOException ex) {
             Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
         }
+            
+            
         
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jTextField_selectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_selectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_selectActionPerformed
+
+    private void jTextField_searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_searchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_searchActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        Elements links = doc.select(jTextField_select.getText());
+        Elements media = doc.select("[src]");
+        Elements imports = doc.select("link[href]");
+
+        String url_s = links.html();
+        jTextArea1.setText(url_s);
+
+        jLabel1.setText(String.valueOf(links.size()));
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -127,6 +215,11 @@ public class main_window extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextField jTextField_search;
+    private javax.swing.JTextField jTextField_select;
     // End of variables declaration//GEN-END:variables
 }
