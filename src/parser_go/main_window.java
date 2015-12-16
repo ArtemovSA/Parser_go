@@ -49,10 +49,11 @@ public class main_window extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTextArea_company = new javax.swing.JTextArea();
         jTextField_select = new javax.swing.JTextField();
         jTextField_search = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
+        jLabel_name = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -63,11 +64,11 @@ public class main_window extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("jLabel1");
+        jLabel1.setText("Count");
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        jTextArea_company.setColumns(20);
+        jTextArea_company.setRows(5);
+        jScrollPane1.setViewportView(jTextArea_company);
 
         jTextField_select.setText("div.details > h2 > a[href]");
         jTextField_select.addActionListener(new java.awt.event.ActionListener() {
@@ -90,6 +91,8 @@ public class main_window extends javax.swing.JFrame {
             }
         });
 
+        jLabel_name.setText("Name");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -105,7 +108,9 @@ public class main_window extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jTextField_select, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                             .addComponent(jTextField_search))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 398, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel_name)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 353, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
@@ -117,7 +122,8 @@ public class main_window extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField_search, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
+                    .addComponent(jButton1)
+                    .addComponent(jLabel_name))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField_select, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -148,8 +154,7 @@ public class main_window extends javax.swing.JFrame {
                     .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
                     .get();
             
-            jButton1.setText(doc.title());
-            jTextArea1.setText("");
+            jLabel_name.setText(doc.title());
 
         } catch (IOException ex) {
             Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
@@ -172,8 +177,13 @@ public class main_window extends javax.swing.JFrame {
         Elements media = doc.select("[src]");
         Elements imports = doc.select("link[href]");
 
-        String url_s = links.html();
-        jTextArea1.setText(url_s);
+        jTextArea_company.setText("");
+                    
+        for (int i=0; i<links.size()-1; i++) {
+            String url = links.get(i).attr("href");
+            String name = links.get(i).attr("title");
+            jTextArea_company.append(name+" | "+url+"\n");
+        }
 
         jLabel1.setText(String.valueOf(links.size()));
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -217,8 +227,9 @@ public class main_window extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel_name;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTextArea_company;
     private javax.swing.JTextField jTextField_search;
     private javax.swing.JTextField jTextField_select;
     // End of variables declaration//GEN-END:variables
