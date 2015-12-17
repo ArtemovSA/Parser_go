@@ -34,7 +34,7 @@
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jLabel_name" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="353" max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="jButton1" max="32767" attributes="0"/>
                           <Component id="jButton2" max="32767" attributes="0"/>
@@ -46,10 +46,8 @@
                   </Group>
                   <Component id="jScrollPane2" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="jTextField_full" min="-2" pref="196" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jLabel_full" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="340" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="jButton4" max="32767" attributes="0"/>
                           <Component id="jButton3" max="32767" attributes="0"/>
@@ -82,12 +80,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jButton3" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel_full" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jTextField_full" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jButton4" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="8" max="32767" attributes="0"/>
-              <Component id="jScrollPane2" min="-2" pref="121" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="jScrollPane2" pref="215" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -132,7 +129,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="jTextField_search">
       <Properties>
-        <Property name="text" type="java.lang.String" value="microcircuits"/>
+        <Property name="text" type="java.lang.String" value="Electronic assemblies and microcircuits"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jTextField_searchActionPerformed"/>
@@ -177,11 +174,6 @@
     <Component class="javax.swing.JLabel" name="jLabel_full">
       <Properties>
         <Property name="text" type="java.lang.String" value="Load"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="jTextField_full">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="div.presentation global"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton4">

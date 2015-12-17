@@ -31,7 +31,7 @@ public class main_window extends javax.swing.JFrame {
         
     public Document doc = null;
     public Document doc_full = null;
-    public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=";
+    public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=\"Electronic+assemblies+and+microcircuits\"";
     public String url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
             
     public ArrayList<Company_class> companys = new ArrayList<Company_class>();
@@ -64,7 +64,6 @@ public class main_window extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea_full = new javax.swing.JTextArea();
         jLabel_full = new javax.swing.JLabel();
-        jTextField_full = new javax.swing.JTextField();
         jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -89,7 +88,7 @@ public class main_window extends javax.swing.JFrame {
             }
         });
 
-        jTextField_search.setText("microcircuits");
+        jTextField_search.setText("Electronic assemblies and microcircuits");
         jTextField_search.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField_searchActionPerformed(evt);
@@ -118,8 +117,6 @@ public class main_window extends javax.swing.JFrame {
 
         jLabel_full.setText("Load");
 
-        jTextField_full.setText("div.presentation global");
-
         jButton4.setText("Parse");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -141,7 +138,7 @@ public class main_window extends javax.swing.JFrame {
                             .addComponent(jTextField_search))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel_name)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 353, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -150,10 +147,8 @@ public class main_window extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane2)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jTextField_full, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
                         .addComponent(jLabel_full)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 340, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
@@ -178,12 +173,11 @@ public class main_window extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton3)
-                    .addComponent(jLabel_full)
-                    .addComponent(jTextField_full, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel_full))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButton4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -195,7 +189,7 @@ public class main_window extends javax.swing.JFrame {
         Connection.Response res = null;
 
         try {          
-            res = Jsoup.connect(url_search+jTextField_search.getText())
+            res = Jsoup.connect(url_search)//jTextField_search.getText())
                 .method(Method.GET)
                 .execute(); 
 
@@ -231,7 +225,7 @@ public class main_window extends javax.swing.JFrame {
         Elements links = doc.select(jTextField_select.getText());
         jTextArea_company.setText("");
                     
-        for (int i=0; i<links.size()-1; i++) {
+        for (int i=0; i<links.size(); i++) {
             company.name = links.get(i).attr("title");
             String buf_str = links.get(i).attr("href");
             company.url = "http://ru.kompass.com"+ buf_str.substring(buf_str.indexOf("/ru",0));
@@ -257,9 +251,43 @@ public class main_window extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        Elements company_elements = doc_full.select(jTextField_full.getText());
         jTextArea_full.setText("");
-        jTextArea_full.append(company_elements.html());
+        String buf_str;
+        Elements company_sel;
+        
+        String Company_name = doc_full.select("div.headerRow > h1").text();  
+        jTextArea_full.append(Company_name + "\n");
+        
+        String Company_address = doc_full.select("div.addressCoordinates").text();
+        jTextArea_full.append(Company_address + "\n");  
+        
+        String Company_director = doc_full.select("div.addressCoordinates").text();
+        jTextArea_full.append(Company_director + "\n");  
+        
+        String Company_phone = doc_full.select("#phone").text();
+        jTextArea_full.append(Company_address + "\n");  
+        
+        String Company_year = doc_full.select("div.presentation > ul > li:contains(Год основания)").text();
+        jTextArea_full.append(Company_year + "\n");
+        
+        String Company_forma = doc_full.select("div.presentation > ul > li:contains(Организационная форма)").text();
+        jTextArea_full.append(Company_forma + "\n");
+       
+        String Company_capital = doc_full.select("div.presentation > ul > li:contains(Уставной капитал)").text();
+        jTextArea_full.append(Company_capital + "\n");       
+        
+        String Company_NDS = doc_full.select("div.presentation > ul > li:contains(НДС)").text();
+        jTextArea_full.append(Company_NDS + "\n");        
+        
+        String Company_syte = doc_full.select("div.presentation > ul > li:contains(Сайт)").text();
+        jTextArea_full.append(Company_syte + "\n");        
+        
+        String Company_people = doc_full.select("div.presentation > ul > li:contains(Всего в компании)").text();
+        jTextArea_full.append(Company_people + "\n");           
+        
+        String Company_action = doc_full.select("div#secondaryActivitiesTree").text();
+        jTextArea_full.append(Company_action + "\n");  
+     
     }//GEN-LAST:event_jButton4ActionPerformed
 
     /**
@@ -309,7 +337,6 @@ public class main_window extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea_company;
     private javax.swing.JTextArea jTextArea_full;
-    private javax.swing.JTextField jTextField_full;
     private javax.swing.JTextField jTextField_search;
     private javax.swing.JTextField jTextField_select;
     // End of variables declaration//GEN-END:variables
