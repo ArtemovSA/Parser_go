@@ -5,12 +5,17 @@
  */
 package parser_go;
 
+import java.beans.Statement;
 import java.io.File;
 import java.io.IOException;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
 import org.jsoup.Connection;
 import org.jsoup.Connection.Method;
 import org.jsoup.Jsoup;
@@ -23,24 +28,48 @@ import org.jsoup.select.Elements;
  * @author Sergey
  */
 public class main_window extends javax.swing.JFrame {
-
+    
+    //Data base connect
+    static final String JDBC_DRIVER = "oracle.jdbc.driver.OracleDriver";
+    static final String DB_URL = "jdbc:oracle:thin:@localhost:1521:orcl";
+    static final String USER = "SYSTEM";
+    static final String PASS = "2476";
+    java.sql.ResultSet rs = null;
+    java.sql.Statement stmt = null;
+    java.sql.Connection conn = null;
+        
     public class Company_class {
         public String name;
         public String url;
+        public String address;
+        public String director;
+        public String phone;
+        public String year;
+        public String forma;
+        public String capital;
+        public String NDS;
+        public String syte;
+        public String people;
+        public String actions;
     }
         
     public Document doc = null;
-    public Document doc_full = null;
-    public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=\"Electronic+assemblies+and+microcircuits\"";
-    public String url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
-            
+    public String url_search = "http://ru.kompass.com/en/searchCompanies?searchType=ALL&acClassif=&text=\"";
+    
+    public int count_urls;   
     public ArrayList<Company_class> companys = new ArrayList<Company_class>();
 
+    public String[] urls = new String[1000];
+    public String[] sheet_urls = new String[100];
+    String header[] = {"Name","URL","Address", "Director", "Phone", "Year", "Forma", "Capital", "NDS", "Syte","People","Actions"};
+    DefaultTableModel tableModel = new DefaultTableModel(header, 0);
+    
     /**
      * Creates new form main_window
      */
     public main_window() {
         initComponents();
+        jTable1.setModel(tableModel);
     }
 
     /**
@@ -56,37 +85,42 @@ public class main_window extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextArea_company = new javax.swing.JTextArea();
-        jTextField_select = new javax.swing.JTextField();
         jTextField_search = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
         jLabel_name = new javax.swing.JLabel();
-        jButton3 = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea_full = new javax.swing.JTextArea();
-        jLabel_full = new javax.swing.JLabel();
         jButton4 = new javax.swing.JButton();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jLabel_sheets = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea_sheets = new javax.swing.JTextArea();
+        jTextField_count = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jTextField_start = new javax.swing.JTextField();
+        jComboBox_country = new javax.swing.JComboBox();
+        jButton_connect = new javax.swing.JButton();
+        jButton_send = new javax.swing.JButton();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jButton1.setText("Загрузить");
+        jButton1.setText("Load");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
 
-        jLabel1.setText("Count");
+        jLabel1.setText("000");
 
         jTextArea_company.setColumns(20);
+        jTextArea_company.setFont(new java.awt.Font("Monospaced", 0, 10)); // NOI18N
         jTextArea_company.setRows(5);
         jScrollPane1.setViewportView(jTextArea_company);
-
-        jTextField_select.setText("div.details > h2 > a[href]");
-        jTextField_select.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField_selectActionPerformed(evt);
-            }
-        });
 
         jTextField_search.setText("Electronic assemblies and microcircuits");
         jTextField_search.addActionListener(new java.awt.event.ActionListener() {
@@ -95,27 +129,7 @@ public class main_window extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("Парсить");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jLabel_name.setText("Name");
-
-        jButton3.setText("Load company");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jTextArea_full.setColumns(20);
-        jTextArea_full.setRows(5);
-        jScrollPane2.setViewportView(jTextArea_full);
-
-        jLabel_full.setText("Load");
+        jLabel_name.setText("Title");
 
         jButton4.setText("Parse");
         jButton4.addActionListener(new java.awt.event.ActionListener() {
@@ -124,6 +138,75 @@ public class main_window extends javax.swing.JFrame {
             }
         });
 
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTable1);
+
+        jLabel_sheets.setText("000");
+
+        jTextArea_sheets.setColumns(20);
+        jTextArea_sheets.setFont(new java.awt.Font("Monospaced", 0, 10)); // NOI18N
+        jTextArea_sheets.setRows(5);
+        jScrollPane2.setViewportView(jTextArea_sheets);
+
+        jTextField_count.setText("50");
+        jTextField_count.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_countActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Search action");
+
+        jLabel3.setText("Count sheets");
+
+        jLabel4.setText("Count companys");
+
+        jLabel5.setText("Start No:");
+
+        jLabel6.setText("Count");
+
+        jTextField_start.setText("1");
+        jTextField_start.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField_startActionPerformed(evt);
+            }
+        });
+
+        jComboBox_country.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Russian Federation", "Brazil", "China", "South Africa", "India" }));
+        jComboBox_country.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jComboBox_countryActionPerformed(evt);
+            }
+        });
+
+        jButton_connect.setText("Connect");
+        jButton_connect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_connectActionPerformed(evt);
+            }
+        });
+
+        jButton_send.setText("Disconnect");
+        jButton_send.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_sendActionPerformed(evt);
+            }
+        });
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setRows(5);
+        jScrollPane4.setViewportView(jTextArea1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -131,27 +214,50 @@ public class main_window extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                    .addComponent(jScrollPane3)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextField_select, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                            .addComponent(jTextField_search))
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel_name)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 353, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel_sheets)
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel4)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel1)
+                                .addGap(96, 96, 96))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jTextField_search, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jComboBox_country, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane2)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel_full)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 269, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel_name)
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField_start, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField_count, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(jButton_connect)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton_send))
+                    .addComponent(jScrollPane4))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -159,27 +265,37 @@ public class main_window extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField_search, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1)
-                    .addComponent(jLabel_name))
+                    .addComponent(jTextField_search, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(jComboBox_country, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField_select, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel_sheets)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel_name)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4))
+                .addGap(17, 17, 17)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton3)
-                    .addComponent(jLabel_full))
+                    .addComponent(jTextField_count, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTextField_start, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6)
+                    .addComponent(jButton4)
+                    .addComponent(jButton_connect)
+                    .addComponent(jButton_send))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton4)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE))
         );
+
+        jLabel2.getAccessibleContext().setAccessibleName("jLabel2");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -187,109 +303,230 @@ public class main_window extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         
         Connection.Response res = null;
-
-        try {          
-            res = Jsoup.connect(url_search)//jTextField_search.getText())
+        String url_country;
+        String prefix;
+        
+        try {
+            url_search = url_search + jTextField_search.getText() + "\"";
+            res = Jsoup.connect(url_search)
                 .method(Method.GET)
+                .timeout(20000)
                 .execute(); 
 
             doc = res.parse();
+            
+            switch (jComboBox_country.getSelectedIndex()) {
+                case 0:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
+                    prefix = "/ru";
+                    break;
+                case 1:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=BR&label=Brazil&filterType=country&searchType=ALL&checked=true";
+                    prefix = "/br";
+                    break;    
+                case 2:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=CN&label=China&filterType=country&searchType=ALL&checked=true";
+                    prefix = "/cn";
+                    break;
+                case 3:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=ZA&label=South%20Africa&filterType=country&searchType=ALL&checked=true";
+                    prefix = "/za";
+                    break;
+                case 4:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=IN&label=India&filterType=country&searchType=ALL&checked=true";
+                    prefix = "/in";
+                    break;
+                default:
+                    url_country = "http://ru.kompass.com/en/searchCompanies/facet?value=RU&label=%20Russian%20Federation&filterType=countrynational&searchType=ALL&checked=true";
+                    prefix = "/ru";
+            }
+                
             
             doc = Jsoup
                     .connect(url_country)
                     .cookies(res.cookies())
                     .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
+                    .timeout(20000)
                     .get();
+    
+            Elements sheet = doc.select("#paginatorDivId > li > a");    
+            for (int i=0; i<sheet.size(); i++) {
+                sheet_urls[i] = "http://ru.kompass.com" + sheet.get(i).attr("href");
+                jTextArea_sheets.append(sheet_urls[i]+"\n");
+            }
             
-            jLabel_name.setText(doc.title());
+            jTextArea_company.setText("");
+            count_urls = 0;
+            int count_sheets = sheet.size();
+            jLabel_sheets.setText(Integer.toString(count_sheets));
+            
+            for (int s=0; s<count_sheets; s++) {
+                
+                 doc = Jsoup
+                        .connect(sheet_urls[s])
+                        .cookies(res.cookies())
+                        .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
+                        .timeout(20000)
+                        .get();
+                 
+                Elements links = doc.select("div.details > h2 > a[href]");
+                
+                for (int i=0; i<links.size(); i++) {
+                    String buf_str = links.get(i).attr("href");
+                    urls[count_urls] = "http://ru.kompass.com"+ buf_str.substring(buf_str.indexOf(prefix,0));
+                    jTextArea_company.append(urls[count_urls]+"\n");
+                    count_urls++;
+                }
+                 
+                jLabel_name.setText(doc.title());
+                jLabel1.setText(String.valueOf(count_urls));
+            }
+             
 
         } catch (IOException ex) {
             Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
         }
-            
-            
-        
     }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jTextField_selectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_selectActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField_selectActionPerformed
 
     private void jTextField_searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_searchActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField_searchActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Company_class company = new Company_class();
-                
-        Elements links = doc.select(jTextField_select.getText());
-        jTextArea_company.setText("");
-                    
-        for (int i=0; i<links.size(); i++) {
-            company.name = links.get(i).attr("title");
-            String buf_str = links.get(i).attr("href");
-            company.url = "http://ru.kompass.com"+ buf_str.substring(buf_str.indexOf("/ru",0));
-            companys.add(company);
-             jTextArea_company.append(company.name+" | "+company.url+"\n");
-        }
-
-        jLabel1.setText(String.valueOf(links.size()));
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        try {
-            String url_full = companys.get(1).url;
-            doc_full = Jsoup
-                    .connect(url_full)
-                    .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
-                    .get();
-                    
-            jLabel_full.setText(companys.get(1).url);
-        } catch (IOException ex) {
-            Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        jTextArea_full.setText("");
-        String buf_str;
-        Elements company_sel;
+        Document doc_full = null;
+        Company_class company_var = new Company_class();
         
-        String Company_name = doc_full.select("div.headerRow > h1").text();  
-        jTextArea_full.append(Company_name + "\n");
+        int set_count = Integer.parseInt(jTextField_count.getText());
+        int set_start = Integer.parseInt(jTextField_start.getText());
         
-        String Company_address = doc_full.select("div.addressCoordinates").text();
-        jTextArea_full.append(Company_address + "\n");  
+        if ((set_start+set_count) > count_urls) {
+            set_count = count_urls - set_start;
+        }
         
-        String Company_director = doc_full.select("div.addressCoordinates").text();
-        jTextArea_full.append(Company_director + "\n");  
-        
-        String Company_phone = doc_full.select("#phone").text();
-        jTextArea_full.append(Company_address + "\n");  
-        
-        String Company_year = doc_full.select("div.presentation > ul > li:contains(Год основания)").text();
-        jTextArea_full.append(Company_year + "\n");
-        
-        String Company_forma = doc_full.select("div.presentation > ul > li:contains(Организационная форма)").text();
-        jTextArea_full.append(Company_forma + "\n");
-       
-        String Company_capital = doc_full.select("div.presentation > ul > li:contains(Уставной капитал)").text();
-        jTextArea_full.append(Company_capital + "\n");       
-        
-        String Company_NDS = doc_full.select("div.presentation > ul > li:contains(НДС)").text();
-        jTextArea_full.append(Company_NDS + "\n");        
-        
-        String Company_syte = doc_full.select("div.presentation > ul > li:contains(Сайт)").text();
-        jTextArea_full.append(Company_syte + "\n");        
-        
-        String Company_people = doc_full.select("div.presentation > ul > li:contains(Всего в компании)").text();
-        jTextArea_full.append(Company_people + "\n");           
-        
-        String Company_action = doc_full.select("div#secondaryActivitiesTree").text();
-        jTextArea_full.append(Company_action + "\n");  
-     
+        for (int i = set_start - 1; i < ((set_start-1) + set_count); i++){
+            
+            while (doc_full == null) {
+                try {
+                    doc_full = Jsoup
+                            .connect(urls[i])
+                            .userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36")
+                            .timeout(30000)
+                            .get();
+                } catch (IOException ex) {
+                    System.out.print("none "+urls[i]);
+                }
+            }
+           
+
+            company_var.url = urls[i];
+            company_var.name = doc_full.select("div.headerRow h1").text();
+            company_var.address = doc_full.select("div.addressCoordinates").text();
+            company_var.director = doc_full.select("p.name").text();
+            company_var.phone = doc_full.select("#phone").text();
+            company_var.year = doc_full.select("div.presentation > ul > li:contains(Год основания)").text();
+            company_var.forma = doc_full.select("div.presentation > ul > li:contains(Организационная форма)").text();
+            company_var.capital = doc_full.select("div.presentation > ul > li:contains(Уставной капитал)").text();
+            company_var.NDS = doc_full.select("div.presentation > ul > li:contains(НДС)").text();
+            company_var.syte = doc_full.select("div.presentation > ul > li:contains(Сайт)").text();
+            company_var.people = doc_full.select("div.presentation > ul > li:contains(Всего в компании)").text();
+            company_var.actions = doc_full.select("div#secondaryActivitiesTree").text();
+            add_table(company_var);
+            add_database(company_var);
+            
+            doc_full = null;
+        }
     }//GEN-LAST:event_jButton4ActionPerformed
 
+    private void jTextField_countActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_countActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_countActionPerformed
+
+    private void jTextField_startActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField_startActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField_startActionPerformed
+
+    private void jComboBox_countryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox_countryActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jComboBox_countryActionPerformed
+
+    private void jButton_connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_connectActionPerformed
+        try {
+            System.out.println("Connecting to database...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS); //Database connection
+        
+            System.out.println("Creating statement...");
+            stmt = conn.createStatement();
+        } catch (SQLException ex) {
+            Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton_connectActionPerformed
+
+    private void jButton_sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_sendActionPerformed
+        try {
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_jButton_sendActionPerformed
+
+    public void add_database (Company_class company_var) {
+        
+        String Company_URL = company_var.url;
+        String Company_name = company_var.name;         
+        String Company_address = company_var.address;
+        String Company_director = company_var.director;
+        String Company_phone = company_var.phone;
+        String Company_year = company_var.year;
+        String Company_forma = company_var.forma;
+        String Company_capital = company_var.capital;
+        String Company_NDS = company_var.NDS;
+        String Company_syte = company_var.syte;
+        String Company_people = company_var.people;
+        String Company_action = company_var.actions;
+        
+        jTextArea1.setText("");
+        
+        String str = "INSERT INTO COMPANY (NAME, ADDRESS, DIRECTOR, PHONE, YEAR_FOUND, FORMA, CAPITAL, NDS, SYTE, ID_MASHTAB)  VALUES"
+                + " ('"+Company_name+"','"+Company_address+"','"+Company_director
+                +"','"+Company_phone+"','"+Company_year+"','"+Company_forma
+                +"','"+Company_capital+"','"+Company_NDS+"','"+Company_syte
+                +"','"+"1"+"')";
+        
+        jTextArea1.append(str);
+        
+        try {
+            System.out.println("Creating statement...");
+            rs = stmt.executeQuery(str);	
+            if (rs.next()) {System.out.println("Data was inserted");}
+        } catch (SQLException ex) {
+            Logger.getLogger(main_window.class.getName()).log(Level.SEVERE, null, ex);
+        }   
+    }
+    
+    public void add_table (Company_class company_var) {
+        
+            String Company_URL = company_var.url;
+            String Company_name = company_var.name;         
+            String Company_address = company_var.address;
+            String Company_director = company_var.director;
+            String Company_phone = company_var.phone;
+            String Company_year = company_var.year;
+            String Company_forma = company_var.forma;
+            String Company_capital = company_var.capital;
+            String Company_NDS = company_var.NDS;
+            String Company_syte = company_var.syte;
+            String Company_people = company_var.people;
+            String Company_action = company_var.actions;
+        
+            Object[] data = {Company_name,Company_URL,Company_address,Company_director, Company_phone, Company_year, Company_forma,
+                Company_capital,Company_NDS,Company_syte,Company_people,Company_action};
+            
+            tableModel.addRow(data);
+    }
+            
+            
     /**
      * @param args the command line arguments
      */
@@ -327,17 +564,28 @@ public class main_window extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton_connect;
+    private javax.swing.JButton jButton_send;
+    private javax.swing.JComboBox jComboBox_country;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel_full;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel_name;
+    private javax.swing.JLabel jLabel_sheets;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea_company;
-    private javax.swing.JTextArea jTextArea_full;
+    private javax.swing.JTextArea jTextArea_sheets;
+    private javax.swing.JTextField jTextField_count;
     private javax.swing.JTextField jTextField_search;
-    private javax.swing.JTextField jTextField_select;
+    private javax.swing.JTextField jTextField_start;
     // End of variables declaration//GEN-END:variables
 }
